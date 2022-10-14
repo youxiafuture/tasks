@@ -86,11 +86,11 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
 
     private var currentNightMode = 0
     private var currentPro = false
-    private var filter: Filter? = null
+    private var filter: Filter? = null          //TODO filter what
     private var actionMode: ActionMode? = null
     private lateinit var binding: TaskListActivityBinding
 
-    /** @see android.app.Activity.onCreate
+    /** @see android.app.Activity.onCreate`
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,18 +105,26 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
         }
         handleIntent()
 
+        //订阅事件
         eventBus
-            .onEach(this::process)
+            .onEach(this::process)                  //实质为 flow.collect
             .launchIn(lifecycleScope)
+
     }
 
-    private suspend fun process(event: MainActivityEvent) = when (event) {
-        is MainActivityEvent.OpenTask ->
-            onTaskListItemClicked(event.task)
-        is MainActivityEvent.RequestRating ->
-            playServices.requestReview(this)
-        is MainActivityEvent.ClearTaskEditFragment ->
-            removeTaskEditFragment()
+    private suspend fun process(event: MainActivityEvent) {
+        when (event) {
+            //See @SubtaskControlSet
+            is MainActivityEvent.OpenTask ->
+                onTaskListItemClicked(event.task)
+            //See @TaskEditViewModel
+            is MainActivityEvent.RequestRating ->
+                playServices.requestReview(this)
+            //See @TaskEditViewModel
+            is MainActivityEvent.ClearTaskEditFragment ->
+                removeTaskEditFragment()
+        }
+        println("here : $event")
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -186,8 +194,8 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
 
     private fun handleIntent() {
         val intent = intent
-        val openFilter = intent.getFilter
-        val loadFilter = intent.getFilterString
+        val openFilter = intent.getFilter           //TODO 干吗的？
+        val loadFilter = intent.getFilterString     //TODO 干吗的？
         val openTask = !intent.isFromHistory
                 && (intent.hasExtra(OPEN_TASK) || intent.hasExtra(CREATE_TASK))
         val tef = taskEditFragment
@@ -204,6 +212,7 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
             taskListFragment: ${taskListFragment?.getFilter()?.let { "${it.listingTitle}: $it" }}
             taskEditFragment: ${taskEditFragment?.editViewModel?.task}
             **********""")
+        //
         if (!openTask && (openFilter != null || !loadFilter.isNullOrBlank())) {
             tef?.let {
                 lifecycleScope.launch {
@@ -211,6 +220,7 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
                 }
             }
         }
+        Timber.d("00000")
         if (!loadFilter.isNullOrBlank() || openFilter == null && filter == null) {
             lifecycleScope.launch {
                 val filter = if (loadFilter.isNullOrBlank()) {
@@ -224,13 +234,16 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
                         setFilter(filter)
                         openTask(filter)
                     } else {
+                        Timber.d("11111*****")
                         openTaskListFragment(filter, true)
                     }
                 } else {
+                    Timber.d("11111#####")
                     openTaskListFragment(filter, true)
                     openTask(filter)
                 }
             }
+            Timber.d("11111")
         } else if (openFilter != null) {
             clearUi()
             if (isSinglePaneLayout) {
@@ -244,6 +257,7 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
                 openTaskListFragment(openFilter, true)
                 openTask(openFilter)
             }
+            Timber.d("22222")
         } else {
             val existing = taskListFragment
             val target = if (existing == null || existing.getFilter() !== filter) {
@@ -261,6 +275,7 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
                 openTaskListFragment(target, false)
                 openTask(filter)
             }
+            Timber.d("33333")
         }
         if (intent.hasExtra(TOKEN_CREATE_NEW_LIST_NAME)) {
             val listName = intent.getStringExtra(TOKEN_CREATE_NEW_LIST_NAME)
@@ -312,6 +327,7 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
                 && filter!!.areContentsTheSame(newFilter)) {
             return
         }
+        Timber.d("11111*****@@@@@")
         filter = newFilter
         defaultFilterProvider.lastViewedFilter = newFilter
         applyTheme()
@@ -398,7 +414,7 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
             } else {
                 it.discardButtonClick()
             }
-            return@onBackPressed
+            return@onBackPressed        //
         }
         if (taskListFragment?.collapseSearchView() == true) {
             return
@@ -409,7 +425,7 @@ class MainActivity : InjectingAppCompatActivity(), TaskListFragmentCallbackHandl
     private val taskListFragment: TaskListFragment?
         get() = supportFragmentManager.findFragmentByTag(FRAG_TAG_TASK_LIST) as TaskListFragment?
 
-    val taskEditFragment: TaskEditFragment?
+    private val taskEditFragment: TaskEditFragment?
         get() = supportFragmentManager.findFragmentByTag(TaskEditFragment.TAG_TASKEDIT_FRAGMENT) as TaskEditFragment?
 
     override suspend fun stopTimer(): Task {

@@ -2,7 +2,7 @@ object Versions {
     const val kotlin = "1.6.10"
     const val compileSdk = 31
     const val targetSdk = 31
-    const val minSdk = 24
+    const val minSdk = 23
     const val work = "2.7.1"
     const val leakcanary = "2.9.1"
     const val room = "2.4.2"

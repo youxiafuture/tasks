@@ -46,9 +46,9 @@ android {
     }
 
     lint {
-        disable("InvalidPeriodicWorkRequestInterval")
+        //disable("InvalidPeriodicWorkRequestInterval")
         lintConfig = file("lint.xml")
-        textOutput("stdout")
+        //textOutput("stdout")
         textReport = true
     }
 

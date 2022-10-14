@@ -29,6 +29,7 @@ class TaskAdapterProvider @Inject constructor(
         private val googleTaskDao: GoogleTaskDao,
         private val caldavDao: CaldavDao,
         private val localBroadcastManager: LocalBroadcastManager) {
+
     fun createTaskAdapter(filter: Filter): TaskAdapter {
         if (filter.supportsAstridSorting() && preferences.isAstridSort) {
             when (filter) {

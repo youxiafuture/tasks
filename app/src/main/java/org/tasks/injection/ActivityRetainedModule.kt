@@ -11,6 +11,11 @@ import org.tasks.ui.MainActivityEventBus
 import org.tasks.ui.TaskEditEventBus
 import org.tasks.ui.TaskListEventBus
 
+/**
+ * ActivityRetainedComponent: 注入器面向的对象为ViewModel
+ *
+ */
+
 @Module
 @InstallIn(ActivityRetainedComponent::class)
 class ActivityRetainedModule {

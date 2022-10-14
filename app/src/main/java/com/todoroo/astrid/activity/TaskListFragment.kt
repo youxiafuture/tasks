@@ -5,10 +5,13 @@
  */
 package com.todoroo.astrid.activity
 
+import android.annotation.TargetApi
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ShortcutManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.speech.RecognizerIntent
@@ -80,7 +83,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.tasks.LocalBroadcastManager
 import org.tasks.R
-import org.tasks.ShortcutManager
+//import org.tasks.ShortcutManager
 import org.tasks.Tasks.Companion.IS_GOOGLE_PLAY
 import org.tasks.activities.FilterSettingsActivity
 import org.tasks.activities.GoogleTaskListSettingsActivity
@@ -124,6 +127,7 @@ import org.tasks.ui.TaskEditEventBus
 import org.tasks.ui.TaskListEvent
 import org.tasks.ui.TaskListEventBus
 import org.tasks.ui.TaskListViewModel
+import timber.log.Timber
 import java.time.format.FormatStyle
 import javax.inject.Inject
 import kotlin.math.max
@@ -153,14 +157,15 @@ class TaskListFragment : Fragment(), OnRefreshListener, Toolbar.OnMenuItemClickL
     @Inject lateinit var defaultThemeColor: ThemeColor
     @Inject lateinit var colorProvider: ColorProvider
     @Inject lateinit var notificationManager: NotificationManager
-    @Inject lateinit var shortcutManager: ShortcutManager
+//    @Inject lateinit var shortcutManager: ShortcutManager
     @Inject lateinit var taskCompleter: TaskCompleter
     @Inject lateinit var locale: Locale
     @Inject lateinit var firebase: Firebase
     @Inject lateinit var repeatTaskHelper: RepeatTaskHelper
     @Inject lateinit var taskListEventBus: TaskListEventBus
     @Inject lateinit var taskEditEventBus: TaskEditEventBus
-    
+
+    private lateinit var shortcutManager: ShortcutManager
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var emptyRefreshLayout: SwipeRefreshLayout
     private lateinit var coordinatorLayout: CoordinatorLayout
@@ -187,6 +192,7 @@ class TaskListFragment : Fragment(), OnRefreshListener, Toolbar.OnMenuItemClickL
                 ?.setAction(R.string.action_open) { context?.openUri(event.uri) }
                 ?.show()
         is TaskListEvent.BegForSubscription -> {
+            //这里用composeView实现了一个subscription的弹框
             binding.banner.setContent {
                 var showBanner by rememberSaveable { mutableStateOf(true) }
                 MdcTheme {
@@ -330,7 +336,7 @@ class TaskListFragment : Fragment(), OnRefreshListener, Toolbar.OnMenuItemClickL
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setNavigationOnClickListener { callbacks.onNavigationIconClicked() }
         setupMenu(toolbar)
-
+        Timber.d("11111*****@@@@@#####")
         return binding.root
     }
 
@@ -543,7 +549,10 @@ class TaskListFragment : Fragment(), OnRefreshListener, Toolbar.OnMenuItemClickL
 
     private fun createNewTask() {
         lifecycleScope.launch {
-            shortcutManager.reportShortcutUsed(ShortcutManager.SHORTCUT_NEW_TASK)
+            if (AndroidUtilities.atLeastNougatMR1()) {
+                shortcutManager = requireContext().getSystemService(android.content.pm.ShortcutManager::class.java)
+                shortcutManager.reportShortcutUsed("static_new_task")
+            }
             onTaskListItemClicked(addTask(""))
             firebase.addTask("fab")
         }

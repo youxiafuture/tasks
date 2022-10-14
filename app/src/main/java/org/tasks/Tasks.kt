@@ -41,23 +41,31 @@ class Tasks : Application(), Configuration.Provider {
     @Inject lateinit var buildSetup: BuildSetup
     @Inject lateinit var inventory: Inventory
     @Inject lateinit var localBroadcastManager: LocalBroadcastManager
-    @Inject lateinit var upgrader: Lazy<Upgrader>
+    @Inject lateinit var upgrader: Lazy<Upgrader>       // TODO Q：Lazy<T> ??? 这是什么用法
     @Inject lateinit var workManager: Lazy<WorkManager>
     @Inject lateinit var refreshScheduler: Lazy<RefreshScheduler>
     @Inject lateinit var geofenceApi: Lazy<GeofenceApi>
     @Inject lateinit var appWidgetManager: Lazy<AppWidgetManager>
     @Inject lateinit var workerFactory: HiltWorkerFactory
     @Inject lateinit var contentObserver: Lazy<OpenTaskContentObserver>
-    
+
     override fun onCreate() {
         super.onCreate()
+        //build相关的一些配置
+        //TODO Q: 构造函数怎么初始的？Preferences?
         buildSetup.setup()
+        //升级处理 See @Upgrader
         upgrade()
+        //See @Preferences
         preferences.isSyncOngoing = false
         preferences.setBoolean(R.string.p_sync_ongoing_opentasks, false)
+        //Theme
         ThemeBase.getThemeBase(preferences, inventory, null).setDefaultNightMode()
+        //Broadcast
         localBroadcastManager.registerRefreshReceiver(RefreshBroadcastReceiver())
+        //locale configuration
         Locale.getInstance(this).createConfigurationContext(applicationContext)
+        //coroutine
         backgroundWork()
     }
 

@@ -18,7 +18,7 @@ import javax.inject.Singleton
 
 @Singleton
 class Inventory @Inject constructor(
-        @ApplicationContext private val context: Context,
+        @ApplicationContext private val context: Context,   //
         private val preferences: Preferences,
         private val signatureVerifier: SignatureVerifier,
         private val localBroadcastManager: LocalBroadcastManager,
