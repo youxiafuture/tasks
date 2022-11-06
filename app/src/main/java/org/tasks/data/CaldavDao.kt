@@ -2,12 +2,7 @@ package org.tasks.data
 
 import android.content.Context
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Transaction
-import androidx.room.Update
+import androidx.room.*
 import com.todoroo.andlib.utility.DateUtilities.now
 import com.todoroo.astrid.api.FilterListItem.NO_ORDER
 import com.todoroo.astrid.core.SortHelper.APPLE_EPOCH
@@ -316,6 +311,7 @@ GROUP BY caldav_lists.cdl_uuid
     @Query("UPDATE tasks SET modified = :modificationTime WHERE _id in (:ids)")
     internal abstract suspend fun touchInternal(ids: List<Long>, modificationTime: Long = now())
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT task.*, caldav_task.*, IFNULL(cd_order, (created - $APPLE_EPOCH) / 1000) AS primary_sort FROM caldav_tasks AS caldav_task INNER JOIN tasks AS task ON _id = cd_task WHERE cd_calendar = :calendar AND parent = :parent AND cd_deleted = 0 AND deleted = 0 AND primary_sort >= :from AND primary_sort < IFNULL(:to, ${Long.MAX_VALUE}) ORDER BY primary_sort")
     internal abstract suspend fun getTasksToShift(calendar: String, parent: Long, from: Long, to: Long?): List<CaldavTaskContainer>
 
